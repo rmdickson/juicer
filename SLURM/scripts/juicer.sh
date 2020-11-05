@@ -482,7 +482,7 @@ fi
 # Add header containing command executed and timestamp:
 jid=`sbatch <<- HEADER | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l 
-        $userstring
+	$userstring
 	$queuestring
 	#SBATCH -t 2
 	#SBATCH -c 1
@@ -559,7 +559,7 @@ then
 			#SBATCH -o $debugdir/split-%j.out
 			#SBATCH -e $debugdir/split-%j.err
 			#SBATCH -J "${groupname}_split_${i}"
-			$userstring			
+			$userstring
 			date
 			echo "Split file: $filename"
 			split -a 3 -l $splitsize -d --additional-suffix=.fastq $i $splitdir/$filename
@@ -575,7 +575,7 @@ SPLITEND`
 			#SBATCH -o $debugdir/split-%j.out
 			#SBATCH -e $debugdir/split-%j.err
 			#SBATCH -J "${groupname}_split_${i}"
-                        $userstring			
+			$userstring
 			date
 			echo "Split file: $filename"
 			zcat $i | split -a 3 -l $splitsize -d --additional-suffix=.fastq - $splitdir/$filename
@@ -645,7 +645,7 @@ SPLITEND`
 		#SBATCH -e $debugdir/count_ligation-%j.err
 		#SBATCH -J "${groupname}_${jname}_Count_Ligation"
 		#SBATCH --mem=5G
-                $userstring			
+		$userstring
 
 		date
 		export usegzip=${usegzip}; export name=${name}; export name1=${name1}; export name2=${name2}; export ext=${ext}; export ligation="${ligation}"; ${juiceDir}/scripts/countligations.sh
@@ -668,7 +668,7 @@ CNTLIG`
 		#SBATCH --mem=$alloc_mem
 		#SBATCH -J "${groupname}_align1_${jname}"
 		#SBATCH --threads-per-core=1		
-                $userstring			
+		$userstring
 
 		${load_bwa}
 
@@ -722,8 +722,8 @@ ALGNR1`
 		#SBATCH --ntasks=1
 		#SBATCH -d $dependalign
 		#SBATCH -J "${groupname}_merge_${jname}"
-                #SBATCH --threads-per-core=1
-                $userstring
+		#SBATCH --threads-per-core=1
+		$userstring
 		${load_awk}
 		date
 		# call chimeric_blacklist.awk to deal with chimeric reads; sorted file is sorted by read name at this point
@@ -795,7 +795,7 @@ MRGALL`
 		$queuestring
 		#SBATCH -J "${groupname}_check"
 		#SBATCH -d $dependmerge
-                $userstring			
+		$userstring
 
 		date
 		echo "Checking $f"
@@ -849,7 +849,7 @@ then
 		${sbatch_cpu_alloc}
 		#SBATCH -J "${groupname}_fragmerge"
 		${sbatch_wait}
-                $userstring			
+		$userstring
 
 		date
 		if [ -f "${errorfile}" ]
@@ -912,7 +912,7 @@ then
 	#SBATCH --ntasks=1
 	#SBATCH -J "${groupname}_dedup_guard"
 	${sbatch_wait}
-        $userstring			
+	$userstring
 
 	date
 DEDUPGUARD`
@@ -931,7 +931,7 @@ DEDUPGUARD`
 	#SBATCH --ntasks=1
 	#SBATCH -J "${groupname}_dedup"
 	${sbatch_wait}
-        $userstring
+	$userstring
 	
 	${load_awk}
 	date
@@ -967,7 +967,7 @@ DEDUP`
 	#SBATCH --ntasks=1
 	#SBATCH -J "${groupname}_post_dedup"
 	#SBATCH -d ${dependguard}
-        $userstring			
+	$userstring
 
 	date
 	rm -Rf $tmpdir;
@@ -1005,7 +1005,7 @@ if [ -z $postproc ]
 	#SBATCH --mem-per-cpu=1G
 	#SBATCH -J "${groupname}_dupcheck"
 	${sbatch_wait}
-        $userstring			
+	$userstring
 	${load_awk}
 	date      
 	ls -l ${outputdir}/merged_sort.txt | awk '{printf("%s ", \\\$5)}' > $debugdir/dupcheck-${groupname}
@@ -1052,7 +1052,7 @@ PRESTATS`
 		#SBATCH --mem=25G
 		#SBATCH -J "${groupname}_stats"
 		${sbatch_wait0}
-                $userstring			
+		$userstring
 
 		date
 		if [ -f "${errorfile}" ]
@@ -1078,7 +1078,7 @@ STATS`
 		#SBATCH --mem=25G
 		#SBATCH -J "${groupname}_stats"
 		${sbatch_wait0}
-                $userstring			
+		$userstring
 
 		perl ${juiceDir}/scripts/statistics.pl -s $site_file -l $ligation -o $outputdir/inter_30.txt -q 30 $outputdir/merged_nodups.txt
 		date
@@ -1098,7 +1098,7 @@ STATS30`
 		#SBATCH --mem=25G
 		#SBATCH -J "${groupname}_stats"
 		${sbatch_wait}
-                $userstring			
+		$userstring
 		${load_awk}
 		cat $splitdir/*_abnorm.sam > $outputdir/abnormal.sam
 		cat $splitdir/*_unmapped.sam > $outputdir/unmapped.sam
@@ -1122,9 +1122,9 @@ CONCATFILES`
 	#SBATCH -c 1
 	#SBATCH --ntasks=1
 	#SBATCH -J "${groupname}_prep_done"     
-        #SBATCH --mail-type=END,FAIL
+	#SBATCH --mail-type=END,FAIL
 	${sbatch_wait1}
-        $userstring	   
+	$userstring
 
 
 	date
@@ -1146,7 +1146,7 @@ FINCLN1`
 	#SBATCH --mem=49G
 	#SBATCH -J "${groupname}_hic"
 	#SBATCH -d $dependstats
-        $userstring			
+	$userstring
 
 	${load_java}
 	export IBM_JAVA_OPTIONS="-Xmx49152m -Xgcthreads1"
@@ -1180,7 +1180,7 @@ HIC`
 	#SBATCH --mem=49G
 	#SBATCH -J "${groupname}_hic30"
 	#SBATCH -d ${dependstats30}
-        $userstring			
+	$userstring
 
 	${load_java}
 	export IBM_JAVA_OPTIONS="-Xmx49152m -Xgcthreads1"
@@ -1223,7 +1223,7 @@ then
 	#SBATCH --ntasks=1
 	#SBATCH -J "${groupname}_hiccups_wrap"
 	${sbatch_wait}
-        $userstring
+	$userstring
 
 	${load_gpu}
 	echo "load: $load_gpu"
@@ -1253,7 +1253,7 @@ jid=`sbatch <<- ARROWS | egrep -o -e "\b[0-9]+$"
 	#SBATCH --ntasks=1
 	#SBATCH -J "${groupname}_arrowhead_wrap"
 	${sbatch_wait}
-        $userstring			
+	$userstring
 
 	${load_java}
 	date
@@ -1278,7 +1278,7 @@ jid=`sbatch <<- FINCLN1 | egrep -o -e "\b[0-9]+$"
 	#SBATCH --ntasks=1
 	#SBATCH -J "${groupname}_prep_done"
 	#SBATCH -d $dependarrows
-        $userstring			
+	$userstring
 
 	date
 	export splitdir=${splitdir}; export outputdir=${outputdir}; ${juiceDir}/scripts/check.sh
