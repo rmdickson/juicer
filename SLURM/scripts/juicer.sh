@@ -67,10 +67,15 @@ shopt -s extglob
 juicer_version="1.6"
 ## Set the following variables to work with your system
 
-# Aiden Lab specific check
+##################################
+#                                #
+#   SITE CUSTOMIZATION SECTION   # 
+#                                #
+##################################
 isRice=$(host $(hostname) | awk '{if ($1~/rice/) {print 1} else {print 0}; exit}') #'
 isBCM=$(host $(hostname) | awk '{if ($1~/bcm/) {print 1} else {print 0}; exit}') #'
 isVoltron=0
+isComputeCanada=$(if [ "$CC_CLUSTER" != "" ]; then echo 1; else echo 0; fi)
 ## path additionals, make sure paths are correct for your system
 ## use cluster load commands
 if [ $isRice -eq 1 ] 
@@ -108,6 +113,23 @@ then
     # default long queue, can also be set in options via -l
     long_queue="mhgcp"
     long_queue_time="3600"
+elif [ $isComputeCanada -eq 1 ]
+then
+    load_bwa="module load bwa"
+    load_java="module load java"
+    load_gpu="module load cuda"
+    load_awk=" "
+    # Partition (aka queue) should not be requested explicitly at Compute Canada.
+    # queue=""
+    # long_queue=""
+    # Compute Canada general-purpose systems have up to 6 different time
+    # partitions: 3:0:0, 12:0:0, 24:0:0, 72:0:0 or 3-0:0:0, 168:0:0 or 7-0:0:0,
+    # and 672:0:0 or 28-0:0:0.  The defaults below are GUESSES.  Use -Q and -L
+    # to set better values if you know them.
+    queue_time="24:0:0"
+    long_queue_time="168:0:0"
+    # TODO We should probably check that juiceDir is set, else warn and quit.
+    #      Compute Canada does not have a global install of Juicer (yet).
 else
     isVoltron=1
     #export PATH=/gpfs0/biobuild/biobuilds-2016.11/bin:$PATH 
