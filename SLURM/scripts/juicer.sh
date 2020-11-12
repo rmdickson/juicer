@@ -482,9 +482,9 @@ fi
 
 if [ -z "$user" ]
 then
-    userstring=""
+    acctstring=""
 else
-    userstring="#SBATCH -A $user"
+    acctstring="#SBATCH -A $user"
 fi
 
 if [ -z "$queue" ]
@@ -504,7 +504,7 @@ fi
 # Add header containing command executed and timestamp:
 jid=`sbatch <<- HEADER | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l 
-	$userstring
+	$acctstring
 	$queuestring
 	#SBATCH -t 2
 	#SBATCH -c 1
@@ -581,7 +581,7 @@ then
 			#SBATCH -o $debugdir/split-%j.out
 			#SBATCH -e $debugdir/split-%j.err
 			#SBATCH -J "${groupname}_split_${i}"
-			$userstring
+			$acctstring
 			date
 			echo "Split file: $filename"
 			split -a 3 -l $splitsize -d --additional-suffix=.fastq $i $splitdir/$filename
@@ -597,7 +597,7 @@ SPLITEND`
 			#SBATCH -o $debugdir/split-%j.out
 			#SBATCH -e $debugdir/split-%j.err
 			#SBATCH -J "${groupname}_split_${i}"
-			$userstring
+			$acctstring
 			date
 			echo "Split file: $filename"
 			zcat $i | split -a 3 -l $splitsize -d --additional-suffix=.fastq - $splitdir/$filename
@@ -667,7 +667,7 @@ SPLITEND`
 		#SBATCH -e $debugdir/count_ligation-%j.err
 		#SBATCH -J "${groupname}_${jname}_Count_Ligation"
 		#SBATCH --mem=5G
-		$userstring
+		$acctstring
 
 		date
 		export usegzip=${usegzip}; export name=${name}; export name1=${name1}; export name2=${name2}; export ext=${ext}; export ligation="${ligation}"; ${juiceDir}/scripts/countligations.sh
@@ -690,7 +690,7 @@ CNTLIG`
 		#SBATCH --mem=$alloc_mem
 		#SBATCH -J "${groupname}_align1_${jname}"
 		#SBATCH --threads-per-core=1		
-		$userstring
+		$acctstring
 
 		${load_bwa}
 
@@ -745,7 +745,7 @@ ALGNR1`
 		#SBATCH -d $dependalign
 		#SBATCH -J "${groupname}_merge_${jname}"
 		#SBATCH --threads-per-core=1
-		$userstring
+		$acctstring
 		${load_awk}
 		date
 		# call chimeric_blacklist.awk to deal with chimeric reads; sorted file is sorted by read name at this point
@@ -817,7 +817,7 @@ MRGALL`
 		$queuestring
 		#SBATCH -J "${groupname}_check"
 		#SBATCH -d $dependmerge
-		$userstring
+		$acctstring
 
 		date
 		echo "Checking $f"
@@ -871,7 +871,7 @@ then
 		${sbatch_cpu_alloc}
 		#SBATCH -J "${groupname}_fragmerge"
 		${sbatch_wait}
-		$userstring
+		$acctstring
 
 		date
 		if [ -f "${errorfile}" ]
@@ -934,7 +934,7 @@ then
 	#SBATCH --ntasks=1
 	#SBATCH -J "${groupname}_dedup_guard"
 	${sbatch_wait}
-	$userstring
+	$acctstring
 
 	date
 DEDUPGUARD`
@@ -953,7 +953,7 @@ DEDUPGUARD`
 	#SBATCH --ntasks=1
 	#SBATCH -J "${groupname}_dedup"
 	${sbatch_wait}
-	$userstring
+	$acctstring
 	
 	${load_awk}
 	date
@@ -963,7 +963,7 @@ DEDUPGUARD`
             exit 1 
         fi 
 	squeue -u $USER -o "%A %T %j %E %R" | column -t
-	awk -v queue=$long_queue -v groupname=$groupname -v debugdir=$debugdir -v dir=$outputdir -v topDir=$topDir -v juicedir=$juiceDir -v site=$site -v genomeID=$genomeID -v genomePath=$genomePath -v user=$USER -v guardjid=$guardjid -v justexact=$justexact -f $juiceDir/scripts/split_rmdups.awk $outputdir/merged_sort.txt
+	awk -v queue=$long_queue -v groupname=$groupname -v debugdir=$debugdir -v dir=$outputdir -v topDir=$topDir -v juicedir=$juiceDir -v site=$site -v genomeID=$genomeID -v genomePath=$genomePath -v user=$USER -v slurmacct=$user -v guardjid=$guardjid -v justexact=$justexact -f $juiceDir/scripts/split_rmdups.awk $outputdir/merged_sort.txt
 	##Schedule new job to run after last dedup part:
 	##Push guard to run after last dedup is completed:
 	##srun --ntasks=1 -c 1 "$queuestring" -t 1 -o ${debugdir}/dedup_requeue-%j.out -e ${debugdir}/dedup-requeue-%j.err -J "$groupname_msplit0" -d singleton echo ID: $ echo "\${!SLURM_JOB_ID}"; scontrol update JobID=$guardjid dependency=afterok:\$SLURM_JOB_ID
@@ -989,7 +989,7 @@ DEDUP`
 	#SBATCH --ntasks=1
 	#SBATCH -J "${groupname}_post_dedup"
 	#SBATCH -d ${dependguard}
-	$userstring
+	$acctstring
 
 	date
 	rm -Rf $tmpdir;
@@ -1015,7 +1015,7 @@ if [ -z $postproc ]
     then
     # Check that dedupping worked properly
     # in ideal world, we would check this in split_rmdups and not remove before we know they are correct
-    awkscript='BEGIN{sscriptname = sprintf("%s/.%s_rmsplit.slurm", debugdir, groupname);}NR==1{if (NF == 2 && $1 == $2 ){print "Sorted and dups/no dups files add up"; printf("#!/bin/bash -l\n#SBATCH -o %s/dup-rm.out\n#SBATCH -e %s/dup-rm.err\n#SBATCH -p %s\n#SBATCH -J %s_msplit0\n#SBATCH -d singleton\n#SBATCH -t 1440\n#SBATCH -c 1\n#SBATCH --ntasks=1\ndate;\nrm %s/*_msplit*_optdups.txt; rm %s/*_msplit*_dups.txt; rm %s/*_msplit*_merged_nodups.txt;rm %s/split*;\ndate\n", debugdir, debugdir, queue, groupname, dir, dir, dir, dir) > sscriptname; sysstring = sprintf("sbatch %s", sscriptname); system(sysstring);close(sscriptname); }else{print "Problem"; print "***! Error! The sorted file and dups/no dups files do not add up, or were empty."}}'
+    awkscript='BEGIN{sscriptname = sprintf("%s/.%s_rmsplit.slurm", debugdir, groupname);}NR==1{if (NF == 2 && $1 == $2 ){print "Sorted and dups/no dups files add up"; printf("#!/bin/bash -l\n'$acctstring'\n#SBATCH -o %s/dup-rm.out\n#SBATCH -e %s/dup-rm.err\n'$queuestring'\n#SBATCH -J %s_msplit0\n#SBATCH -d singleton\n#SBATCH -t 1440\n#SBATCH -c 1\n#SBATCH --ntasks=1\ndate;\nrm %s/*_msplit*_optdups.txt; rm %s/*_msplit*_dups.txt; rm %s/*_msplit*_merged_nodups.txt;rm %s/split*;\ndate\n", debugdir, debugdir, queue, groupname, dir, dir, dir, dir) > sscriptname; sysstring = sprintf("sbatch %s", sscriptname); system(sysstring);close(sscriptname); }else{print "Problem"; print "***! Error! The sorted file and dups/no dups files do not add up, or were empty."}}'
     jid=`sbatch <<- DUPCHECK | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l
 	$queuestring
@@ -1027,7 +1027,7 @@ if [ -z $postproc ]
 	#SBATCH --mem-per-cpu=1G
 	#SBATCH -J "${groupname}_dupcheck"
 	${sbatch_wait}
-	$userstring
+	$acctstring
 	${load_awk}
 	date      
 	ls -l ${outputdir}/merged_sort.txt | awk '{printf("%s ", \\\$5)}' > $debugdir/dupcheck-${groupname}
@@ -1048,7 +1048,7 @@ DUPCHECK`
 	#SBATCH --mem-per-cpu=1G
 	#SBATCH -J "${groupname}_prestats"
 	${sbatch_wait}
-	$userstring
+	$acctstring
 	${load_awk}
         date
         ${load_java}
@@ -1074,7 +1074,7 @@ PRESTATS`
 		#SBATCH --mem=25G
 		#SBATCH -J "${groupname}_stats"
 		${sbatch_wait0}
-		$userstring
+		$acctstring
 
 		date
 		if [ -f "${errorfile}" ]
@@ -1100,7 +1100,7 @@ STATS`
 		#SBATCH --mem=25G
 		#SBATCH -J "${groupname}_stats"
 		${sbatch_wait0}
-		$userstring
+		$acctstring
 
 		perl ${juiceDir}/scripts/statistics.pl -s $site_file -l $ligation -o $outputdir/inter_30.txt -q 30 $outputdir/merged_nodups.txt
 		date
@@ -1120,7 +1120,7 @@ STATS30`
 		#SBATCH --mem=25G
 		#SBATCH -J "${groupname}_stats"
 		${sbatch_wait}
-		$userstring
+		$acctstring
 		${load_awk}
 		cat $splitdir/*_abnorm.sam > $outputdir/abnormal.sam
 		cat $splitdir/*_unmapped.sam > $outputdir/unmapped.sam
@@ -1146,7 +1146,7 @@ CONCATFILES`
 	#SBATCH -J "${groupname}_prep_done"     
 	#SBATCH --mail-type=END,FAIL
 	${sbatch_wait1}
-	$userstring
+	$acctstring
 
 
 	date
@@ -1168,7 +1168,7 @@ FINCLN1`
 	#SBATCH --mem=49G
 	#SBATCH -J "${groupname}_hic"
 	#SBATCH -d $dependstats
-	$userstring
+	$acctstring
 
 	${load_java}
 	export IBM_JAVA_OPTIONS="-Xmx49152m -Xgcthreads1"
@@ -1202,7 +1202,7 @@ HIC`
 	#SBATCH --mem=49G
 	#SBATCH -J "${groupname}_hic30"
 	#SBATCH -d ${dependstats30}
-	$userstring
+	$acctstring
 
 	${load_java}
 	export IBM_JAVA_OPTIONS="-Xmx49152m -Xgcthreads1"
@@ -1245,7 +1245,7 @@ then
 	#SBATCH --ntasks=1
 	#SBATCH -J "${groupname}_hiccups_wrap"
 	${sbatch_wait}
-	$userstring
+	$acctstring
 
 	${load_gpu}
 	echo "load: $load_gpu"
@@ -1275,7 +1275,7 @@ jid=`sbatch <<- ARROWS | egrep -o -e "\b[0-9]+$"
 	#SBATCH --ntasks=1
 	#SBATCH -J "${groupname}_arrowhead_wrap"
 	${sbatch_wait}
-	$userstring
+	$acctstring
 
 	${load_java}
 	date
@@ -1300,11 +1300,17 @@ jid=`sbatch <<- FINCLN1 | egrep -o -e "\b[0-9]+$"
 	#SBATCH --ntasks=1
 	#SBATCH -J "${groupname}_prep_done"
 	#SBATCH -d $dependarrows
-	$userstring
+	$acctstring
 
 	date
 	export splitdir=${splitdir}; export outputdir=${outputdir}; ${juiceDir}/scripts/check.sh
 	date
 FINCLN1`
+
+echo "Writing all pending batch scripts to $debugdir..."
+cd $debugdir
+for job in $(squeue -u $USER --Format=jobid --noheader); do
+    scontrol write batch_script $job
+done
 
 echo "(-: Finished adding all jobs... Now is a good time to get that cup of coffee... Last job id $jid"

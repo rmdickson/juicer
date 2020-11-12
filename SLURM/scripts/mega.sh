@@ -239,7 +239,7 @@ then
 
     jid1=`sbatch <<- TOPSTATS | egrep -o -e "\b[0-9]+$"
 #!/bin/bash -l
-#SBATCH -p $queue
+##SBATCH -p $queue
 #SBATCH -t 1440
 #SBATCH -c 1
 #SBATCH --ntasks=1
@@ -263,7 +263,7 @@ TOPSTATS`
 # Merge all merged_nodups.txt files found under current dir
     jid2=`sbatch <<- MRGSRT | egrep -o -e "\b[0-9]+$"
 #!/bin/bash -l
-#SBATCH -p ${long_queue}
+##SBATCH -p ${long_queue}
 #SBATCH -t ${long_queue_time}
 #SBATCH -c 1
 #SBATCH --ntasks=1
@@ -308,7 +308,7 @@ then
     # Create statistics files for MQ > 0
     jid3=`sbatch <<- INTER0 | egrep -o -e "\b[0-9]+$"
 #!/bin/bash -l
-#SBATCH -p ${long_queue}
+##SBATCH -p ${long_queue}
 #SBATCH -t ${long_queue_time}
 #SBATCH -c 1
 #SBATCH --ntasks=1
@@ -332,7 +332,7 @@ INTER0`
     # Create statistics files for MQ > 30
     jid4=`sbatch <<- INTER30 | egrep -o -e "\b[0-9]+$"
 #!/bin/bash -l
-#SBATCH -p ${long_queue}
+##SBATCH -p ${long_queue}
 #SBATCH -t ${long_queue_time}
 #SBATCH -c 1
 #SBATCH --ntasks=1
@@ -356,7 +356,7 @@ INTER30`
     # Create HIC maps file for MQ > 0
     jid5=`sbatch <<- HIC0 | egrep -o -e "\b[0-9]+$"
 #!/bin/bash -l
-#SBATCH -p ${long_queue}
+##SBATCH -p ${long_queue}
 #SBATCH -t ${long_queue_time}
 #SBATCH -c 8
 #SBATCH --ntasks=1
@@ -387,7 +387,7 @@ HIC0`
     # Create HIC maps file for MQ > 30
     jid6=`sbatch <<- HIC30 | egrep -o -e "\b[0-9]+$"
 #!/bin/bash -l
-#SBATCH -p ${long_queue}
+##SBATCH -p ${long_queue}
 #SBATCH -t ${long_queue_time}
 #SBATCH -c 1
 #SBATCH --ntasks=1
@@ -433,7 +433,7 @@ then
 	fi
 	jid7=`sbatch <<- HICCUPS | egrep -o -e "\b[0-9]+$"
 	#!/bin/bash -l
-	#SBATCH -p ${long_queue}
+	##SBATCH -p ${long_queue}
 	#SBATCH -t 1440
 	#SBATCH -c 2
 	#SBATCH --ntasks=1
@@ -462,7 +462,7 @@ then
     # Create domain lists for MQ > 30
     jid8=`sbatch <<- ARROWHEAD | egrep -o -e "\b[0-9]+$"
 #!/bin/bash -l
-#SBATCH -p ${long_queue}
+##SBATCH -p ${long_queue}
 #SBATCH -t ${long_queue_time}
 #SBATCH -c 2
 #SBATCH --ntasks=1
@@ -484,7 +484,7 @@ ARROWHEAD`
     # Final checks
     jid9=`sbatch <<- FINAL | egrep -o -e "\b[0-9]+$"
 #!/bin/bash -l
-#SBATCH -p ${queue}
+##SBATCH -p ${queue}
 #SBATCH -t 100
 #SBATCH -c 1
 #SBATCH --ntasks=1
@@ -524,7 +524,7 @@ FINAL`
 else
     jid9=`sbatch <<- FINAL | egrep -o -e "\b[0-9]+$"
 #!/bin/bash -l
-#SBATCH -p ${queue}
+##SBATCH -p ${queue}
 #SBATCH -t 100
 #SBATCH -c 1
 #SBATCH --ntasks=1
