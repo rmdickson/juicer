@@ -10,7 +10,7 @@ For general questions, please use
 
 **This fork, github.com/rmdickson/juicer.git, is intended for use on [Compute Canada](https://docs.computecanada.ca)
 general-purpose clusters.**  The important changes are:
-- No explicit "queues" or "partitions" are used by default in juicer.sh.
+- No explicit "queues" or "partitions" are used by default.
 - Bugs in the handling of the -A <account name> argument to juicer.sh are fixed.
 
 If you have further difficulties using Juicer, please do not
