@@ -8,6 +8,11 @@ Juicer is currently in its beta release, Juicer version 1.6.
 For general questions, please use
 [the Google Group](https://groups.google.com/forum/#!forum/3d-genomics).
 
+**This fork, github.com/rmdickson/juicer.git, is intended for use on [Compute Canada](https://docs.computecanada.ca)
+general-purpose clusters.**  The important changes are:
+- No explicit "queues" or "partitions" are used by default in juicer.sh.
+- Bugs in the handling of the -A <account name> argument to juicer.sh are fixed.
+
 If you have further difficulties using Juicer, please do not
 hesitate to contact us (theaidenlab@gmail.com)
 
